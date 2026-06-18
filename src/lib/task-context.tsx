@@ -27,6 +27,7 @@ export interface Task {
   pushedToGitHub: boolean;
   assignedBy: string;
   createdAt: number;
+  doneAt?: number;
 }
 
 export interface ActiveWorker {
@@ -178,6 +179,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
                 pushedToGitHub: t.pushedToGitHub || t.pushed || false,
                 assignedBy: t.assignedBy || '',
                 createdAt: t.createdAt || Date.now(),
+                doneAt: t.doneAt || undefined,
               });
 
               if (t.activeWorker) {

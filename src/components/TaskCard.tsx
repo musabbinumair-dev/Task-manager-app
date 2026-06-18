@@ -15,8 +15,10 @@ import {
   timeElapsed,
   generateId,
 } from "@/lib/helpers";
+import ConfirmPopup from "./ConfirmPopup";
 
 const STATUSES: Array<Task["status"]> = ["todo", "progress", "testing", "blocked", "done"];
+const PRIORITIES: Array<Task["priority"]> = ["high", "medium", "low"];
 const OWNERS: User[] = ["Musab", "Yusha", "Shared"];
 
 interface TaskCardProps {
@@ -28,6 +30,7 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
   const { state, dispatch } = useTaskContext();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const activeWorker = state.activeWorkers.find((w) => w.taskId === task.id);
   const isCurrentUserActive = activeWorker?.user === state.currentUser;
@@ -50,12 +53,25 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
     dispatch({ type: "UPDATE_TASK", payload: { id: task.id, status: newStatus } });
   }
 
+  function handlePriorityChange(newPriority: Task["priority"]) {
+    dispatch({ type: "UPDATE_TASK", payload: { id: task.id, priority: newPriority } });
+  }
+
   function handleAssign(owner: User) {
     dispatch({ type: "UPDATE_TASK", payload: { id: task.id, owner } });
   }
 
   function handleDelete() {
+    setShowDeleteConfirm(true);
+  }
+
+  function confirmDelete() {
     dispatch({ type: "DELETE_TASK", payload: task.id });
+    setShowDeleteConfirm(false);
+  }
+
+  function cancelDelete() {
+    setShowDeleteConfirm(false);
   }
 
   function handleSendComment() {
@@ -72,10 +88,6 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
 
   function handleNotesBlur(e: React.FocusEvent<HTMLTextAreaElement>) {
     dispatch({ type: "UPDATE_NOTES", payload: { taskId: task.id, notes: e.target.value } });
-  }
-
-  function handleTogglePushed() {
-    dispatch({ type: "TOGGLE_PUSHED", payload: task.id });
   }
 
   const dueStyle: React.CSSProperties = isOverdue(task.dueDate)
@@ -287,6 +299,27 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
                 <option key={s} value={s}>{getStatusLabel(s)}</option>
               ))}
             </select>
+            <select
+              data-testid={`select-priority-${task.id}`}
+              value={task.priority}
+              onChange={(e) => handlePriorityChange(e.target.value as Task["priority"])}
+              style={{
+                border: "2px solid #000",
+                boxShadow: "2px 2px 0 #000",
+                padding: "4px 8px",
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 700,
+                fontSize: "11px",
+                backgroundColor: getPriorityStyle(task.priority).backgroundColor as string,
+                color: getPriorityStyle(task.priority).color as string,
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              {PRIORITIES.map((p) => (
+                <option key={p} value={p}>{getPriorityIcon(p)} {p.toUpperCase()}</option>
+              ))}
+            </select>
             <div style={{ display: "flex", gap: "4px" }}>
               {OWNERS.map((owner) => (
                 <button
@@ -311,26 +344,8 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
           </div>
         )}
 
-        {/* Card Bottom: pushed + comments */}
+        {/* Card Bottom: comments */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "2px solid #000", paddingTop: "8px" }}>
-          <button
-            data-testid={`button-pushed-${task.id}`}
-            onClick={handleTogglePushed}
-            disabled={isOtherMembersTask}
-            style={{
-              padding: "4px 10px",
-              border: task.pushedToGitHub ? "2px solid #000" : "2px dashed #888",
-              backgroundColor: task.pushedToGitHub ? "#00CC44" : "transparent",
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 700,
-              fontSize: "10px",
-              cursor: isOtherMembersTask ? "default" : "pointer",
-              color: task.pushedToGitHub ? "#000" : "#888",
-              opacity: isOtherMembersTask ? 0.5 : 1,
-            }}
-          >
-            {task.pushedToGitHub ? "✓ PUSHED" : "PUSH →"}
-          </button>
           <button
             data-testid={`button-comments-${task.id}`}
             onClick={() => setShowComments((v) => !v)}
@@ -405,6 +420,13 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
           </div>
         )}
       </div>
+      <ConfirmPopup
+        open={showDeleteConfirm}
+        title="DELETE TASK"
+        message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 }

@@ -73,7 +73,7 @@ export function getPriorityStyle(priority: Priority): React.CSSProperties {
   const map: Record<Priority, React.CSSProperties> = {
     high: { backgroundColor: "#FF0033", color: "#fff", border: "2px solid #000" },
     medium: { backgroundColor: "#FF8800", color: "#000", border: "2px solid #000" },
-    low: { backgroundColor: "#AAAAAA", color: "#000", border: "2px solid #000" },
+    low: { backgroundColor: "#00AA44", color: "#fff", border: "2px solid #000" },
   };
   return map[priority];
 }

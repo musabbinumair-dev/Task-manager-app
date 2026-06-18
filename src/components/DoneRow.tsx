@@ -7,8 +7,13 @@ interface DoneRowProps {
 }
 
 export default function DoneRow({ task }: DoneRowProps) {
-  const { state, dispatch } = useTaskContext();
-  const isMyTask = task.owner === state.currentUser || task.owner === "Shared";
+  const { dispatch } = useTaskContext();
+
+  function handleTogglePushed() {
+    dispatch({ type: "TOGGLE_PUSHED", payload: task.id });
+  }
+
+  const completedTime = task.doneAt ? timeAgo(task.doneAt) : timeAgo(task.createdAt);
 
   return (
     <div
@@ -35,40 +40,32 @@ export default function DoneRow({ task }: DoneRowProps) {
       <span style={{ ...getOwnerStyle(task.owner), padding: "2px 6px", fontSize: "10px", fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", flexShrink: 0 }}>
         {task.owner.toUpperCase()}
       </span>
-      {/* Time ago */}
-      <span style={{ fontSize: "11px", color: "#888", flexShrink: 0 }}>{timeAgo(task.createdAt)}</span>
       {/* Category */}
       <span style={{ border: "2px solid #000", padding: "2px 6px", fontSize: "10px", fontWeight: 600, backgroundColor: "#fff", flexShrink: 0 }}>
         {task.category}
       </span>
-      {/* Comment count */}
-      {task.comments.length > 0 && (
-        <span style={{ fontSize: "11px", color: "#666", flexShrink: 0 }}>💬 {task.comments.length}</span>
-      )}
-      {/* Delete button — only for own tasks and shared tasks */}
-      {isMyTask && (
-        <button
-          data-testid={`button-delete-done-${task.id}`}
-          onClick={() => dispatch({ type: "DELETE_TASK", payload: task.id })}
-          style={{
-            border: "2px solid #000",
-            backgroundColor: "#FF0033",
-            color: "#fff",
-            width: "20px",
-            height: "20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            fontSize: "11px",
-            fontWeight: 700,
-            flexShrink: 0,
-            padding: 0,
-          }}
-        >
-          ✕
-        </button>
-      )}
+      {/* Pushed to GitHub toggle */}
+      <button
+        data-testid={`button-pushed-done-${task.id}`}
+        onClick={handleTogglePushed}
+        style={{
+          border: "2px solid #000",
+          padding: "2px 6px",
+          fontSize: "10px",
+          fontWeight: 700,
+          fontFamily: "'Space Grotesk', sans-serif",
+          backgroundColor: task.pushedToGitHub ? "#00CC44" : "#FF0033",
+          color: task.pushedToGitHub ? "#000" : "#fff",
+          cursor: "pointer",
+          flexShrink: 0,
+        }}
+      >
+        {task.pushedToGitHub ? "PUSHED" : "UNPUSHED"}
+      </button>
+      {/* Completed time ago — far right */}
+      <span style={{ fontSize: "11px", color: "#888", flexShrink: 0, marginLeft: "auto" }}>
+        {completedTime}
+      </span>
     </div>
   );
 }

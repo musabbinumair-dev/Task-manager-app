@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useTaskContext } from "@/lib/task-context";
 import { Task, User } from "@/lib/task-context";
-import { generateId } from "@/lib/helpers";
+import { generateId, getStatusLabel } from "@/lib/helpers";
 import { useToastNotification } from "@/components/ToastContainer";
 
 const DEFAULT_CATEGORIES = ["Core", "Backend", "Frontend", "Security", "Analytics", "Billing", "Notifications", "Display", "Bugfix", "DevOps"];
+const STATUSES: Array<Task["status"]> = ["todo", "progress", "testing", "blocked", "done"];
 
 export default function AddTaskPage() {
   const { state, dispatch } = useTaskContext();
@@ -19,6 +20,7 @@ export default function AddTaskPage() {
   const [owner, setOwner] = useState<User>(state.currentUser);
   const [category, setCategory] = useState("Frontend");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
+  const [status, setStatus] = useState<Task["status"]>("todo");
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calMonth, setCalMonth] = useState(new Date());
@@ -44,7 +46,7 @@ export default function AddTaskPage() {
       owner,
       category,
       priority,
-      status: "todo",
+      status,
       dueDate,
       notes: "",
       comments: [],
@@ -59,6 +61,7 @@ export default function AddTaskPage() {
     setOwner(state.currentUser);
     setCategory("Frontend");
     setPriority("medium");
+    setStatus("todo");
     setDueDate(null);
   }
 
@@ -211,6 +214,20 @@ export default function AddTaskPage() {
                 <option value="high">HIGH</option>
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "11px", letterSpacing: "0.1em", marginBottom: "6px" }}>STATUS</label>
+              <select
+                data-testid="select-task-status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as Task["status"])}
+                style={{ padding: "10px 12px", border: "2px solid #000", boxShadow: "2px 2px 0 #000", backgroundColor: "#fff", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: "13px", cursor: "pointer", outline: "none" }}
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>{getStatusLabel(s)}</option>
+                ))}
               </select>
             </div>
 
