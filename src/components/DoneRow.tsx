@@ -45,7 +45,7 @@ export default function DoneRow({ task }: DoneRowProps) {
       {task.comments.length > 0 && (
         <span style={{ fontSize: "11px", color: "#666", flexShrink: 0 }}>💬 {task.comments.length}</span>
       )}
-      {/* Delete button */}
+      {/* Delete button — only for own tasks and shared tasks */}
       {isMyTask && (
         <button
           data-testid={`button-delete-done-${task.id}`}

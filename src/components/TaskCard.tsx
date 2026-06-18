@@ -33,6 +33,7 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
   const isCurrentUserActive = activeWorker?.user === state.currentUser;
   const isSomeoneElseActive = activeWorker && activeWorker.user !== state.currentUser;
   const isMyTask = task.owner === state.currentUser || task.owner === "Shared";
+  const isOtherMembersTask = task.owner !== state.currentUser && task.owner !== "Shared";
 
   const cardClass = isCurrentUserActive ? "card-active" : isUnseen ? "card-unseen" : "";
   const accentColor = getStatusAccentColor(task.status);
@@ -208,6 +209,10 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
             <span style={{ width: "8px", height: "8px", backgroundColor: getStatusAccentColor("progress"), borderRadius: "50%" }} />
             <strong>{activeWorker.user}</strong> has been on this for {timeElapsed(activeWorker.startTime)}
           </div>
+        ) : isOtherMembersTask ? (
+          <div style={{ border: "2px dashed #ccc", padding: "10px", fontSize: "12px", color: "#999", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, textAlign: "center" }}>
+            NO ACTIVE WORKER
+          </div>
         ) : isMyTask ? (
           <button
             data-testid={`button-start-work-${task.id}`}
@@ -225,14 +230,10 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
           >
             🎯 I'M WORKING ON THIS
           </button>
-        ) : (
-          <div style={{ border: "2px dashed #ccc", padding: "10px", fontSize: "12px", color: "#999", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, textAlign: "center" }}>
-            NO ACTIVE WORKER
-          </div>
-        )}
+        ) : null}
 
         {/* Notes */}
-        {isMyTask ? (
+        {isMyTask && !isOtherMembersTask ? (
           <textarea
             data-testid={`textarea-notes-${task.id}`}
             defaultValue={task.notes}
@@ -260,55 +261,62 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
         ) : null}
 
         {/* Card Actions */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-          <select
-            data-testid={`select-status-${task.id}`}
-            value={task.status}
-            onChange={(e) => handleStatusChange(e.target.value as Task["status"])}
-            style={{
-              border: "2px solid #000",
-              boxShadow: "2px 2px 0 #000",
-              padding: "4px 8px",
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 600,
-              fontSize: "11px",
-              backgroundColor: "#F5F0E8",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>{getStatusLabel(s)}</option>
-            ))}
-          </select>
-          <div style={{ display: "flex", gap: "4px" }}>
-            {OWNERS.map((owner) => (
-              <button
-                data-testid={`button-assign-${owner}-${task.id}`}
-                key={owner}
-                onClick={() => handleAssign(owner)}
-                style={{
-                  padding: "4px 8px",
-                  border: "2px solid #000",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 700,
-                  fontSize: "10px",
-                  cursor: "pointer",
-                  ...(task.owner === owner ? getOwnerStyle(owner) : { backgroundColor: "#F5F0E8", color: "#000" }),
-                  boxShadow: task.owner === owner ? "2px 2px 0 #000" : "none",
-                }}
-              >
-                {owner.toUpperCase()}
-              </button>
-            ))}
+        {isOtherMembersTask ? (
+          <div style={{ fontSize: "11px", color: "#999", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, padding: "4px 0" }}>
+            🔒 You can only comment on this task
           </div>
-        </div>
+        ) : (
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <select
+              data-testid={`select-status-${task.id}`}
+              value={task.status}
+              onChange={(e) => handleStatusChange(e.target.value as Task["status"])}
+              style={{
+                border: "2px solid #000",
+                boxShadow: "2px 2px 0 #000",
+                padding: "4px 8px",
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 600,
+                fontSize: "11px",
+                backgroundColor: "#F5F0E8",
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>{getStatusLabel(s)}</option>
+              ))}
+            </select>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {OWNERS.map((owner) => (
+                <button
+                  data-testid={`button-assign-${owner}-${task.id}`}
+                  key={owner}
+                  onClick={() => handleAssign(owner)}
+                  style={{
+                    padding: "4px 8px",
+                    border: "2px solid #000",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "10px",
+                    cursor: "pointer",
+                    ...(task.owner === owner ? getOwnerStyle(owner) : { backgroundColor: "#F5F0E8", color: "#000" }),
+                    boxShadow: task.owner === owner ? "2px 2px 0 #000" : "none",
+                  }}
+                >
+                  {owner.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Card Bottom: pushed + comments */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "2px solid #000", paddingTop: "8px" }}>
           <button
             data-testid={`button-pushed-${task.id}`}
             onClick={handleTogglePushed}
+            disabled={isOtherMembersTask}
             style={{
               padding: "4px 10px",
               border: task.pushedToGitHub ? "2px solid #000" : "2px dashed #888",
@@ -316,8 +324,9 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 700,
               fontSize: "10px",
-              cursor: "pointer",
+              cursor: isOtherMembersTask ? "default" : "pointer",
               color: task.pushedToGitHub ? "#000" : "#888",
+              opacity: isOtherMembersTask ? 0.5 : 1,
             }}
           >
             {task.pushedToGitHub ? "✓ PUSHED" : "PUSH →"}
