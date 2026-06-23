@@ -192,3 +192,38 @@
   transform: translate(-2px, -2px);
   box-shadow: 8px 8px 0px #000;
 }
+
+
+.login-bg-element {
+  position: absolute;
+  z-index: 0;
+  user-select: none;
+  pointer-events: none;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+@media (max-width: 1024px) {
+  .login-bg-element {
+    display: none !important;
+  }
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #000;
+  background-color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: transform 0.1s, box-shadow 0.1s, background-color 0.1s;
+}
+
+.login-input:focus {
+  background-color: #FFFDE6;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 #000;
+}
+
+
