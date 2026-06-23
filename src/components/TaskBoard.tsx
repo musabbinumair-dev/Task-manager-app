@@ -69,6 +69,13 @@ export default function TaskBoard({ tasks, showNewAssignments = false, showCurre
     }
   });
 
+  // Sort done tasks by doneAt (or createdAt) descending - newest first
+  grouped.done.sort((a, b) => {
+    const aTime = a.doneAt ?? a.createdAt;
+    const bTime = b.doneAt ?? b.createdAt;
+    return bTime - aTime;
+  });
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* New Assignments Banner */}

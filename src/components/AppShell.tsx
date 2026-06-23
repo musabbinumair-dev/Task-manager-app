@@ -4,22 +4,28 @@ import { useTaskContext } from "@/lib/task-context";
 import { getOwnerStyle, getOwnerBg, getOwnerTextColor } from "@/lib/helpers";
 
 const NAV_ITEMS = [
-  { section: "MY WORKSPACE", items: [
-    { href: "/", label: "DASHBOARD", icon: "▣" },
-    { href: "/add", label: "ADD TASK", icon: "＋" },
-  ]},
-  { section: "TRACKS", items: [
-    { href: "/track/musab", label: "MUSAB'S TRACK", icon: "◎", owner: "Musab" as const },
-    { href: "/track/yusha", label: "YUSHA'S TRACK", icon: "◎", owner: "Yusha" as const },
-    { href: "/track/shared", label: "SHARED TRACK", icon: "◎", owner: "Shared" as const },
-  ]},
-  { section: "VIEWS", items: [
-    { href: "/all", label: "ALL TASKS", icon: "≡" },
-    { href: "/in-progress", label: "IN PROGRESS", icon: "▶" },
-    { href: "/blocked", label: "BLOCKED", icon: "✕" },
-    { href: "/done", label: "DONE", icon: "✓" },
-    { href: "/table", label: "TABLE VIEW", icon: "⊞" },
-  ]},
+  {
+    section: "MY WORKSPACE", items: [
+      { href: "/", label: "DASHBOARD", icon: "▣" },
+      { href: "/add", label: "ADD TASK", icon: "＋" },
+    ]
+  },
+  {
+    section: "TRACKS", items: [
+      { href: "/track/musab", label: "MUSAB'S TRACK", icon: "◎", owner: "Musab" as const },
+      { href: "/track/yusha", label: "YUSHA'S TRACK", icon: "◎", owner: "Yusha" as const },
+      { href: "/track/shared", label: "SHARED TRACK", icon: "◎", owner: "Shared" as const },
+    ]
+  },
+  {
+    section: "VIEWS", items: [
+      { href: "/all", label: "ALL TASKS", icon: "≡" },
+      { href: "/in-progress", label: "IN PROGRESS", icon: "▶" },
+      { href: "/blocked", label: "BLOCKED", icon: "✕" },
+      { href: "/done", label: "DONE", icon: "✓" },
+      { href: "/table", label: "TABLE VIEW", icon: "⊞" },
+    ]
+  },
 ];
 
 const PAGE_LABELS: Record<string, string> = {
@@ -70,7 +76,7 @@ export default function AppShell({ children, onLogout }: AppShellProps) {
       {/* NAVBAR */}
       <div
         style={{
-          height: "52px",
+          height: "64px",
           borderBottom: "3px solid #000",
           backgroundColor: "#F5F0E8",
           display: "flex",
@@ -80,27 +86,30 @@ export default function AppShell({ children, onLogout }: AppShellProps) {
           flexShrink: 0,
         }}
       >
-        {/* Left: Logo + brand + divider + page label */}
+        {/* Left: Logo + divider + page label */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              backgroundColor: "#FFE600",
-              border: "3px solid #000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 700,
-              fontSize: "18px",
-            }}
-          >
-            Q
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <img
+              src="/bloc-favicon.png"
+              alt="Bloc"
+              style={{
+                width: "32px",
+                height: "32px",
+                objectFit: "contain",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 800,
+                fontSize: "20px",
+                letterSpacing: "0.08em",
+                color: "#000",
+              }}
+            >
+              BLOC
+            </span>
           </div>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "16px", letterSpacing: "0.1em" }}>
-            QTASK
-          </span>
           <div style={{ width: "2px", height: "24px", backgroundColor: "#000" }} />
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: "13px", color: "#444", letterSpacing: "0.04em" }}>
             {PAGE_LABELS[location] ?? location.replace("/", "").toUpperCase()}
@@ -152,7 +161,7 @@ export default function AppShell({ children, onLogout }: AppShellProps) {
               backgroundColor: "#F5F0E8",
               cursor: "pointer",
             }}
-            onClick={() => {}}
+            onClick={() => { }}
             title="Logged in user"
           >
             <div

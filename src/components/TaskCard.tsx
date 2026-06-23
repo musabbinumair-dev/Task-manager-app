@@ -16,6 +16,7 @@ import {
   generateId,
 } from "@/lib/helpers";
 import ConfirmPopup from "./ConfirmPopup";
+import EditTaskModal from "./EditTaskModal";
 
 const STATUSES: Array<Task["status"]> = ["todo", "progress", "testing", "blocked", "done"];
 const PRIORITIES: Array<Task["priority"]> = ["high", "medium", "low"];
@@ -31,6 +32,7 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const activeWorker = state.activeWorkers.find((w) => w.taskId === task.id);
   const isCurrentUserActive = activeWorker?.user === state.currentUser;
@@ -122,7 +124,7 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
       {/* Left accent bar */}
       <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "5px", backgroundColor: accentColor }} />
 
-      <div style={{ paddingLeft: "12px", padding: "12px 12px 12px 17px", display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ padding: "12px", paddingLeft: "18px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
         {/* Top row: priority + title + delete */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
           <span style={{ fontSize: "10px", fontWeight: 700, color: getPriorityStyle(task.priority).backgroundColor as string, flexShrink: 0 }}>
@@ -270,82 +272,73 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
           <div style={{ border: "2px dashed #000", padding: "8px", fontSize: "12px", color: "#555", backgroundColor: "#fffdf5" }}>
             {task.notes}
           </div>
-        ) : null}
-
-        {/* Card Actions */}
-        {isOtherMembersTask ? (
-          <div style={{ fontSize: "11px", color: "#999", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, padding: "4px 0" }}>
-            🔒 You can only comment on this task
-          </div>
         ) : (
+          <div style={{ border: "2px dashed #ccc", padding: "8px", fontSize: "12px", color: "#999", backgroundColor: "transparent", fontStyle: "italic" }}>
+            No notes
+          </div>
+        )}
+
+        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {/* Card Actions */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-            <select
-              data-testid={`select-status-${task.id}`}
-              value={task.status}
-              onChange={(e) => handleStatusChange(e.target.value as Task["status"])}
+            <div
+              data-testid={`static-status-${task.id}`}
               style={{
                 border: "2px solid #000",
                 boxShadow: "2px 2px 0 #000",
-                padding: "4px 8px",
+                padding: "6px 12px",
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 600,
                 fontSize: "11px",
                 backgroundColor: "#F5F0E8",
-                cursor: "pointer",
-                outline: "none",
+                color: "#000",
+                minWidth: "100px",
+                textAlign: "center",
               }}
             >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>{getStatusLabel(s)}</option>
-              ))}
-            </select>
-            <select
-              data-testid={`select-priority-${task.id}`}
-              value={task.priority}
-              onChange={(e) => handlePriorityChange(e.target.value as Task["priority"])}
+              {getStatusLabel(task.status)}
+            </div>
+            <div
+              data-testid={`static-priority-${task.id}`}
               style={{
                 border: "2px solid #000",
                 boxShadow: "2px 2px 0 #000",
-                padding: "4px 8px",
+                padding: "6px 12px",
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 700,
                 fontSize: "11px",
                 backgroundColor: getPriorityStyle(task.priority).backgroundColor as string,
                 color: getPriorityStyle(task.priority).color as string,
-                cursor: "pointer",
-                outline: "none",
+                minWidth: "100px",
+                textAlign: "center",
               }}
             >
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>{getPriorityIcon(p)} {p.toUpperCase()}</option>
-              ))}
-            </select>
+              {getPriorityIcon(task.priority)} {task.priority.toUpperCase()}
+            </div>
             <div style={{ display: "flex", gap: "4px" }}>
               {OWNERS.map((owner) => (
-                <button
-                  data-testid={`button-assign-${owner}-${task.id}`}
+                <div
+                  data-testid={`static-assign-${owner}-${task.id}`}
                   key={owner}
-                  onClick={() => handleAssign(owner)}
                   style={{
                     padding: "4px 8px",
                     border: "2px solid #000",
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontWeight: 700,
                     fontSize: "10px",
-                    cursor: "pointer",
                     ...(task.owner === owner ? getOwnerStyle(owner) : { backgroundColor: "#F5F0E8", color: "#000" }),
                     boxShadow: task.owner === owner ? "2px 2px 0 #000" : "none",
+                    opacity: task.owner === owner ? 1 : 0.6,
                   }}
                 >
                   {owner.toUpperCase()}
-                </button>
+                </div>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Card Bottom: comments */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "2px solid #000", paddingTop: "8px" }}>
+          {/* Card Bottom: comments + edit */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "2px solid #000", paddingTop: "8px" }}>
           <button
             data-testid={`button-comments-${task.id}`}
             onClick={() => setShowComments((v) => !v)}
@@ -362,11 +355,30 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
           >
             COMMENTS ({task.comments.length})
           </button>
+          {isMyTask && (
+            <button
+              data-testid={`button-edit-${task.id}`}
+              onClick={() => setShowEditModal(true)}
+              style={{
+                padding: "4px 10px",
+                border: "2px solid #000",
+                backgroundColor: "#000",
+                color: "#FFE600",
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 700,
+                fontSize: "10px",
+                cursor: "pointer",
+              }}
+            >
+              EDIT
+            </button>
+          )}
           {task.comments.length > 0 && !showComments && (
             <div style={{ fontSize: "11px", color: "#666", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {task.comments[task.comments.length - 1].text}
             </div>
           )}
+        </div>
         </div>
 
         {/* Comments Panel */}
@@ -427,6 +439,7 @@ export default function TaskCard({ task, isUnseen = false }: TaskCardProps) {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
+      <EditTaskModal task={task} open={showEditModal} onClose={() => setShowEditModal(false)} />
     </div>
   );
 }

@@ -40,30 +40,19 @@ export default function LoginPage() {
       >
         <div style={{ marginBottom: "32px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-            <div
+            <img
+              src="/bloc-logo.png"
+              alt="Bloc Logo"
               style={{
-                width: "48px",
                 height: "48px",
-                backgroundColor: "#FFE600",
-                border: "3px solid #000",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 700,
-                fontSize: "24px",
+                width: "auto",
+                maxWidth: "200px",
+                objectFit: "contain",
               }}
-            >
-              Q
-            </div>
-            <div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "22px", letterSpacing: "0.1em" }}>
-                QTASK MANAGER
-              </div>
-              <div style={{ fontSize: "12px", color: "#666", letterSpacing: "0.05em" }}>
-                TEAM TASK COORDINATION
-              </div>
-            </div>
+            />
+          </div>
+          <div style={{ fontSize: "12px", color: "#666", letterSpacing: "0.05em", fontFamily: "'Space Grotesk', sans-serif" }}>
+            TEAM TASK COORDINATION
           </div>
           <div
             style={{

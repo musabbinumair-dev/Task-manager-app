@@ -85,6 +85,7 @@ export const SEED_DONE = [
 
 export async function seedIfEmpty() {
   const all = [...SEED_DONE, ...SEED_TASKS];
+  const now = Date.now();
   for (let i = 0; i < all.length; i++) {
     const newRef = push(dbRef('tasks'));
     const key = newRef.key;
@@ -92,6 +93,10 @@ export async function seedIfEmpty() {
     let ownerStr = all[i].owner;
     ownerStr = ownerStr.charAt(0).toUpperCase() + ownerStr.slice(1);
     if (ownerStr === 'Shared') ownerStr = 'Shared';
+
+    const createdAt = now - (all.length - i) * 1000;
+    const isDone = (all[i] as any).status === 'done';
+    const doneAt = isDone ? createdAt + 5000 : undefined;
 
     await set(dbRef(`tasks/${key}`), {
       ...all[i], 
@@ -104,7 +109,8 @@ export async function seedIfEmpty() {
       comments: [],
       pushedToGitHub: false,
       assignedBy: ownerStr,
-      createdAt: Date.now() - (all.length - i) * 1000,
+      createdAt,
+      doneAt,
       updatedAt: Date.now(),
     });
   }

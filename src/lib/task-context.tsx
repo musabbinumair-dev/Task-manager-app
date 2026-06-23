@@ -79,7 +79,16 @@ function taskReducer(state: AppState, action: Action): AppState {
     case 'UPDATE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(t => t.id === action.payload.id ? { ...t, ...action.payload } : t)
+        tasks: state.tasks.map(t => {
+          if (t.id !== action.payload.id) return t;
+          const updated = { ...t, ...action.payload };
+          if (action.payload.status === 'done' && t.status !== 'done') {
+            updated.doneAt = Date.now();
+          } else if (action.payload.status && action.payload.status !== 'done' && t.status === 'done') {
+            updated.doneAt = undefined;
+          }
+          return updated;
+        })
       };
     case 'SET_ACTIVE_WORKER':
       return {
@@ -228,10 +237,27 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
           break;
         }
         case 'UPDATE_TASK': {
-          await update(dbRef(`tasks/${action.payload.id}`), action.payload);
-          if (action.payload.status === 'done') {
-            await update(dbRef(`tasks/${action.payload.id}`), { doneAt: Date.now(), doneBy: state.currentUser });
+          const currentTask = state.tasks.find(t => t.id === action.payload.id);
+          const updates: Record<string, any> = { ...action.payload };
+
+          // When marking as done, set doneAt timestamp
+          if (action.payload.status === 'done' && currentTask?.status !== 'done') {
+            updates.doneAt = Date.now();
+            updates.doneBy = state.currentUser;
           }
+
+          // When undoing from done, explicitly null out doneAt/doneBy (undefined is ignored by Firebase)
+          if (action.payload.status && action.payload.status !== 'done' && currentTask?.status === 'done') {
+            updates.doneAt = null;
+            updates.doneBy = null;
+          }
+
+          // Remove undefined values since Firebase ignores them
+          Object.keys(updates).forEach(key => {
+            if (updates[key] === undefined) updates[key] = null;
+          });
+
+          await update(dbRef(`tasks/${action.payload.id}`), updates);
           break;
         }
         case 'SET_ACTIVE_WORKER': {

@@ -30,7 +30,11 @@ export default function DashboardPage() {
   const todo = tasks.filter((t) => t.status === "todo").length;
   const completionRate = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  const lastDone = tasks.filter((t) => t.status === "done").sort((a, b) => b.createdAt - a.createdAt)[0];
+  const lastDone = tasks.filter((t) => t.status === "done").sort((a, b) => {
+    const aTime = a.doneAt ?? a.createdAt;
+    const bTime = b.doneAt ?? b.createdAt;
+    return bTime - aTime;
+  })[0];
 
   const MEMBERS = ["Musab", "Yusha", "Shared"] as const;
 
@@ -53,7 +57,7 @@ export default function DashboardPage() {
             <div style={{ fontSize: "10px", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: "#888", letterSpacing: "0.1em" }}>LATEST COMPLETED TASK</div>
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "14px" }}>{lastDone.title}</div>
             <div style={{ fontSize: "11px", color: "#666" }}>
-              Finished by <strong>{lastDone.owner}</strong> · {timeAgo(lastDone.createdAt)}
+              Finished by <strong>{lastDone.owner}</strong> · {timeAgo(lastDone.doneAt ?? lastDone.createdAt)}
             </div>
           </div>
           <button
@@ -262,7 +266,11 @@ export default function DashboardPage() {
             RECENT COMPLETIONS
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {tasks.filter((t) => t.status === "done").slice(0, 5).map((t) => (
+            {tasks.filter((t) => t.status === "done").sort((a, b) => {
+              const aTime = a.doneAt ?? a.createdAt;
+              const bTime = b.doneAt ?? b.createdAt;
+              return bTime - aTime;
+            }).slice(0, 5).map((t) => (
               <div key={t.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#00CC44", border: "1px solid #000", flexShrink: 0 }} />
                 <span style={{ flex: 1, fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
